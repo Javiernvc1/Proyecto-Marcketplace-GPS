@@ -1,10 +1,10 @@
 "use strict";
 
-import { respondSuccess, respondError } from "../utils/resHandler.js";
+
 import UserService from "../services/user.service.js";
 import { userBodySchema, userIdSchema } from "../schema/user.schema.js";
 import { handleError } from "../utils/errorHandler.js";
-
+import { respondSuccess, respondError } from "../utils/resHandler.js";
 /**
  * Obtiene todos los usuarios
  * @param {Object} req - Objeto de petición

@@ -20,7 +20,7 @@ async function login(user) {
     const { email, password } = user;
 
     const userFound = await User.findOne({ email: email })
-      .populate("roles")
+      .populate("roleUser")
       .exec();
     if (!userFound) {
       return [null, null, "El usuario y/o contraseña son incorrectos"];
@@ -77,7 +77,7 @@ async function refresh(cookies) {
         const userFound = await User.findOne({
           email: user.email,
         })
-          .populate("roles")
+          .populate("roleUser")
           .exec();
 
         if (!userFound) return [null, "No usuario no autorizado"];

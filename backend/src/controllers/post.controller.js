@@ -130,6 +130,19 @@ async function getPostByCategory(req, res) {
     }
 }
 
+async function getUserFavoritePosts(req, res){
+    try {
+        const {userId} = req.params;
+        const [posts, errorPosts] = await PostService.getUserFavoritePosts(userId);
+        if(errorPosts) return respondError(req, res, 400,  errorPosts);
+        if(!posts) return respondError(req,res, 400, "No se encontro favoritos");
+        respondSuccess(req, res, 200, posts);
+    } catch (error) {
+        handleError(error, 'post.controller -> getUserFavoritePosts');
+        respondError(req, res, 500, 'No se encontro  favoritos');
+    }
+}
+
 export default {
     getPosts,
     createPost,
@@ -139,4 +152,5 @@ export default {
     deletePost,
     savePostAsFavorite,
     getPostByCategory,
+    getUserFavoritePosts
 }

@@ -15,6 +15,6 @@ router.put("/:id", postController.updatePost);
 router.delete("/:id", postController.deletePost);
 router.post("/favorite/:postId", postController.savePostAsFavorite);
 router.get("/category/:categoryId", postController.getPostByCategory);
-
+router.get("/getUserFavoritePosts/:userId", postController.getUserFavoritePosts);
 
 export default router;

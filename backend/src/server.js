@@ -15,30 +15,54 @@ import { setupDB } from "./config/configDB.js";
 // Importa el handler de errores
 import { handleFatalError, handleError } from "./utils/errorHandler.js";
 import { createRoles, createUsers, createCategories } from "./config/initialSetup.js";
-
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
 /**
  * Inicia el servidor web
  */
 async function setupServer() {
   try {
     /** Instancia de la aplicacion */
-    const server = express();
-    server.disable("x-powered-by");
+    const app = express();
+    app.disable("x-powered-by");
     // Agregamos los cors
-    server.use(cors({ credentials: true, origin: true }));
+    app.use(cors({ credentials: true, origin: true }));
     // Agrega el middleware para el manejo de datos en formato URL
-    server.use(urlencoded({ extended: true }));
+    app.use(urlencoded({ extended: true }));
     // Agrega el middleware para el manejo de datos en formato JSON
-    server.use(json());
+    app.use(json());
     // Agregamos el middleware para el manejo de cookies
-    server.use(cookieParser());
+    app.use(cookieParser());
     // Agregamos morgan para ver las peticiones que se hacen al servidor
-    server.use(morgan("dev"));
+    app.use(morgan("dev"));
     // Agrega el enrutador principal al servidor
-    server.use("/api", indexRoutes);
+    app.use("/api", indexRoutes);
+
+    // Crear el servidor HTTP
+    const server = http.createServer(app);
+
+    // Configurar Socket.IO
+    const io = new SocketIOServer(server, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
+    });
+
+    io.on("connection", (socket) => {
+      console.log("Nuevo cliente conectado:", socket.id);
+
+      socket.on("disconnect", () => {
+        console.log("Cliente desconectado:", socket.id);
+      });
+
+      socket.on("chatMessage", (msg) => {
+        io.emit("chatMessage", msg);
+      });
+    });
 
     // Inicia el servidor en el puerto especificado
-    server.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
     });
   } catch (err) {

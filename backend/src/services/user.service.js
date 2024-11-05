@@ -3,6 +3,10 @@
 import User from "../models/user.model.js";
 import Role from "../models/role.model.js";
 import { handleError } from "../utils/errorHandler.js";
+import { saveImageProfile } from "../utils/generalUtils.js";
+import  fs  from "fs";
+import  path  from "path";
+
 
 /**
  * Obtiene todos los usuarios de la base de datos
@@ -12,7 +16,7 @@ async function getUsers() {
   try {
     const users = await User.find()
       .select("-password")
-      .populate("roles")
+      .populate("roleUser")
       .exec();
     if (!users) return [null, "No hay usuarios"];
 
@@ -27,16 +31,17 @@ async function getUsers() {
  * @param {Object} user Objeto de usuario
  * @returns {Promise} Promesa con el objeto de usuario creado
  */
-async function createUser(user) {
+async function createUser(user, file = null) {
   try {
-    const {name, surname, username, description, gender, email, password, roles } = user;
+    const {name, surname, username, description, gender, email, password, profilePicture, roleUser } = user;
 
     const userFound = await User.findOne({ email: user.email });
     if (userFound) return [null, "El usuario ya existe"];
 
-    const rolesFound = await Role.find({ name: { $in: roles } });
+    const rolesFound = await Role.find({ name: { $in: roleUser } });
     if (rolesFound.length === 0) return [null, "El rol no existe"];
     const myRole = rolesFound.map((role) => role._id);
+    const imgPicture = await saveImageProfile(profilePicture);
 
     const newUser = new User({
       name,
@@ -46,7 +51,8 @@ async function createUser(user) {
       gender,
       email,
       password: await User.encryptPassword(password),
-      roles: myRole,
+      profilePicture: imgPicture,
+      roleUser: myRole,
     });
     await newUser.save();
 
@@ -87,7 +93,7 @@ async function updateUser(id, user) {
     const userFound = await User.findById(id);
     if (!userFound) return [null, "El usuario no existe"];
 
-    const { name, surname, username, email, description, password, newPassword, roles } = user;
+    const { name, surname, username, email, description, password, newPassword, roleUser } = user;
 
     const matchPassword = await User.comparePassword(
       password,
@@ -98,7 +104,7 @@ async function updateUser(id, user) {
       return [null, "La contraseña no coincide"];
     }
 
-    const rolesFound = await Role.find({ name: { $in: roles } });
+    const rolesFound = await Role.find({ name: { $in: roleUser } });
     if (rolesFound.length === 0) return [null, "El rol no existe"];
 
     const myRole = rolesFound.map((role) => role._id);
@@ -112,7 +118,7 @@ async function updateUser(id, user) {
         email,
         description,
         password: await User.encryptPassword(newPassword || password),
-        roles: myRole,
+        roleUser: myRole,
       },
       { new: true },
     );
@@ -136,10 +142,31 @@ async function deleteUser(id) {
   }
 }
 
+
+
+
+async function getUserImageByID(id){
+  try {
+      const user = await User.findById(id).select('profilePicture');
+      if (!user || !user.profilePicture) return [null, "No se encontró la imagen de perfil del usuario"];
+
+      const filePath = path.join(process.cwd(), 'src/uploads/profiles', user.profilePicture);
+      if (!fs.existsSync(filePath)) return [null, "La imagen no existe en el servidor"];
+
+      return [filePath, null];
+  } catch (error) {
+      handleError(error, "user.service -> getUserImageByID");
+      return [null, "Error al obtener la imagen de perfil del usuario"];
+  }
+}
+
+
+
 export default {
   getUsers,
   createUser,
   getUserById,
   updateUser,
   deleteUser,
+  getUserImageByID
 };

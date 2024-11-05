@@ -51,7 +51,7 @@ async function createUsers() {
         gender:"Hombre",
         email: "user@email.com",
         password: await User.encryptPassword("user123"),
-        roles: user._id,
+        roleUser: user._id,
       }).save(),
       new User({
         name: "user",
@@ -61,7 +61,7 @@ async function createUsers() {
         gender:"Hombre",
         email: "admin@email.com",
         password: await User.encryptPassword("admin123"),
-        roles: admin._id,
+        roleUser: admin._id,
       }).save(),
     ]);
     console.log("* => Users creados exitosamente");

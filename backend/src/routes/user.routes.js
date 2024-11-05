@@ -21,7 +21,7 @@ router.get("/", isAdmin, usuarioController.getUsers);
 router.post("/", isAdmin, usuarioController.createUser);
 router.get("/:id", usuarioController.getUserById);
 router.put("/:id", isAdmin, usuarioController.updateUser);
-router.delete("/:id", isAdmin, usuarioController.deleteUser);
-
+router.delete("/:id", usuarioController.deleteUser);
+router.get("/getUserImageID/:id", usuarioController.getUserImageByID);
 // Exporta el enrutador
 export default router;

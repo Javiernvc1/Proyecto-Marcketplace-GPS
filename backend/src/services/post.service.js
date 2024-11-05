@@ -199,6 +199,32 @@ async function getPostsByCategory( categoryId ){
     }
 }
 
+async function getUserFavoritePosts(userId){
+    try {
+        const user = await User.findById(userId).populate({
+            path: 'savedPosts',
+            populate: [{
+                path: 'author',
+                select: '_id name'
+            },{
+                path: 'category',
+                select: '_id category'
+            }]
+        });
+        if (!user) return [null, `No se encontró el usuario con id: ${userId}`];
+
+        const favoritePosts = user.savedPosts.map(post => ({
+            ...post.toObject(),
+            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`)
+        }));
+
+        return [favoritePosts, null];
+    } catch (error) {
+        handleError(error, "post.service -> getUserFavoritePosts");
+        return [null, error.message];
+    }
+}
+
 export default {
     getPosts,
     createPost,
@@ -207,5 +233,6 @@ export default {
     updatePost,
     deletePost,
     savePostAsFavorite,
-    getPostsByCategory
+    getPostsByCategory,
+    getUserFavoritePosts
 }

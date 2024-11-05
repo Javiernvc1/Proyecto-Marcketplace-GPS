@@ -24,6 +24,27 @@ async function getUsers(req, res) {
   }
 }
 
+async function getUserImageByID(req, res){
+  try {
+      const { id } = req.params;
+      const [filePath, error] = await UserService.getUserImageByID(id);
+      if (error) {
+          if (error === "No se encontró la imagen de perfil del usuario") {
+              // Si no hay imagen de perfil, devolver 204 (No Content)
+              return res.status(204).send();
+          } else {
+              // Otros errores devuelven 404
+              return respondError(req, res, 404, error);
+          }
+      }
+
+      res.sendFile(filePath);
+  } catch (error) {
+      handleError(error, "user.controller -> getUserImageByID");
+      respondError(req, res, 500, "No se pudo encontrar la imagen de perfil del usuario");
+  }
+}
+
 /**
  * Crea un nuevo usuario
  * @param {Object} req - Objeto de petición
@@ -129,4 +150,5 @@ export default {
   getUserById,
   updateUser,
   deleteUser,
+  getUserImageByID,
 };

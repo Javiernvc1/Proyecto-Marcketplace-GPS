@@ -160,5 +160,3 @@ frontend/.env*.local
 
 # vercel
 frontend/.vercel
-src/uploads/images
-src/uploads/profiles

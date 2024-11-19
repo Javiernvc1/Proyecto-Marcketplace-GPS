@@ -2,6 +2,8 @@
 import { PORT, HOST } from "./config/configEnv.js";
 // Importa el módulo 'cors' para agregar los cors
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 // Importa el módulo 'express' para crear la aplicacion web
 import express, { urlencoded, json } from "express";
 // Importamos morgan para ver las peticiones que se hacen al servidor
@@ -20,6 +22,9 @@ import { Server as SocketIOServer } from "socket.io";
 /**
  * Inicia el servidor web
  */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function setupServer() {
   try {
     /** Instancia de la aplicacion */
@@ -28,16 +33,16 @@ async function setupServer() {
     // Agregamos los cors
     app.use(cors({ credentials: true, origin: true }));
     // Agrega el middleware para el manejo de datos en formato URL
-    app.use(urlencoded({ extended: true }));
+    app.use(express.urlencoded({ extended: true }));
     // Agrega el middleware para el manejo de datos en formato JSON
-    app.use(json());
+    app.use(express.json());
     // Agregamos el middleware para el manejo de cookies
     app.use(cookieParser());
     // Agregamos morgan para ver las peticiones que se hacen al servidor
     app.use(morgan("dev"));
     // Agrega el enrutador principal al servidor
     app.use("/api", indexRoutes);
-
+    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
     // Crear el servidor HTTP
     const server = http.createServer(app);
 

@@ -1,12 +1,20 @@
-import axios from "./root.service"
-
+import axios from "./root.service";
+import cookies from 'js-cookie';
 const headers = {
-    "Content-Type": "multipart/form-data",
+    'Content-Type': 'multipart/form-data'
+  };
+  const getAuthHeaders = () => {
+    const token = cookies.get('jwt-auth'); // Obtén el token de autenticación de las cookies
+    return {
+        ...headers,
+        'Authorization': `Bearer ${token}`
+    };
 };
+
 
 export const getCategories = async () => {
     try{
-        const response = await axios.get("categories/")
+        const response = await axios.get("/categories", { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.log(error);

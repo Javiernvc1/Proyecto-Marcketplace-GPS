@@ -9,13 +9,15 @@ export const login = async ({ email, password }) => {
       password,
     });
     const { status, data } = response;
+   
     if (status === 200) {
-      const { email, roles } = await jwtDecode(data.data.accessToken);
-      localStorage.setItem('user', JSON.stringify({ email, roles }));
-      axios.defaults.headers.common[
-        'Authorization'
-      ] = `Bearer ${data.data.accessToken}`;
-    }
+      const { email, role, id } = await jwtDecode(data.data.accessToken);
+      console.log(email, role, id);
+      localStorage.setItem('user', JSON.stringify( { email, role, id } ));
+      axios.defaults.headers.common[ 'Authorization'] = `Bearer ${ data.data.accessToken }`;
+      cookies.set('jwt-auth', data.data.accessToken, { path: '/' });
+      return true;
+  }
   } catch (error) {
     console.log(error);
   }

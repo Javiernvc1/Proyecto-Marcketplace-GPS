@@ -3,7 +3,7 @@
 import { respondSuccess, respondError } from "../utils/resHandler.js";
 import { handleError } from "../utils/errorHandler.js";
 import PostService from "../services/post.service.js";
-
+import { postBodySchema } from "../schema/post.schema.js";
 async function getPosts(req, res) {
     try {
         const [posts, error] = await PostService.getPosts();

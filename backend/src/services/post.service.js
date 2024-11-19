@@ -1,12 +1,15 @@
 "use strict"
-
+import path from "path";
+import { fileURLToPath } from "url";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Category from "../models/category.model.js";
 
-import { PORT, HOST } from "../config/configEnv.js";
+import { PORT, HOST, URL } from "../config/configEnv.js";
 import { handleError } from "../utils/errorHandler.js";
 import { saveImagePost } from "../utils/generalUtils.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function getPosts() {
     try {
@@ -25,9 +28,10 @@ async function getPosts() {
 
         const publicationData = posts.map(post => ({
             ...post.toObject(),
-            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`),
+            images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
         }));
 
+        console.log(publicationData);
         return [publicationData, null];
 
     } catch (error) {
@@ -71,14 +75,19 @@ async function getPostById(id) {
         const post = await Post.findById({ _id: id })
             .populate({
                 path: 'author',
-                select: '_id name'
+                select: '_id name email'
             })
+            .populate({
+                path: 'category',
+                select: '_id nameCategory'
+            })
+            
         
         if (!post) return [null, "La publicación no existe"];
 
         const publicationData = {
             ...post.toObject(),
-            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`),
+            images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
         };
 
         return [publicationData, null];

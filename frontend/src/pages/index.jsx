@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Box, Container } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Box, Container, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
@@ -9,10 +9,10 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { logout } from '../services/auth.service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, Route, Routes, Outlet } from 'react-router-dom';
 import logo from '../assets/logomarketplace.png';
 import { useAuth } from '../context/AuthContext';
-
+import Postspage from './postpage.jsx';
 
 
 const drawerWidth = 240;
@@ -30,6 +30,10 @@ function DashboardLayoutBasic() {
     navigate('/auth');
   };
 
+  const handleCreatePost = () => {
+    navigate('/createpost');
+  };
+
   const drawer = (
     <div>
       <Toolbar>
@@ -37,7 +41,8 @@ function DashboardLayoutBasic() {
       </Toolbar>
       <List>
         {['Explorar todo', 'Mensajes', 'Mis Compras', 'Mis Ventas', 'Favoritos', 'Categorias'].map((text, index) => (
-          <ListItem button key={text}>
+          
+          <ListItem button key={text} component={Link} to={text === 'Explorar todo' ? '/' : `/${text.toLowerCase().replace(/ /g, '-')}`}>
             <ListItemIcon>
               {index === 0 ? <DashboardIcon /> : null}
               {index === 1 ? <EmailIcon /> : null}
@@ -46,14 +51,14 @@ function DashboardLayoutBasic() {
               {index === 4 ? <FavoriteIcon /> : null}
               {index === 5 ? <FormatListBulletedIcon/> : null}
             </ListItemIcon>
-            <ListItemText primary={text} />
+            <ListItemText primary={text} sx={{ color: 'black' }}/>
           </ListItem>
         ))}
         <ListItem button  key="Logout" onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
-          <ListItemText primary="Logout" />
+          <ListItemText primary="Salir" sx={{ color: 'black' }}/>
         </ListItem>
       </List>
     </div>
@@ -82,9 +87,12 @@ function DashboardLayoutBasic() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Panel Principal
+          <Typography variant="h4" noWrap component="div">
+            CampusTrade UBB
           </Typography>
+          <Button color="inherit" onClick={handleCreatePost} sx={{ marginLeft: 'auto' }}>
+            Crear Post
+          </Button>
         </Toolbar>
       </AppBar>
       <Box
@@ -123,9 +131,7 @@ function DashboardLayoutBasic() {
       >
         <Toolbar />
         <Container>
-          <Typography paragraph>
-            Aquí van las publicaciones principales.
-          </Typography>
+        <Outlet />
         </Container>
       </Box>
     </Box>

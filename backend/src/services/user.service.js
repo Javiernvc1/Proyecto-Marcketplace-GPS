@@ -160,6 +160,15 @@ async function getUserImageByID(id){
   }
 }
 
+async function getUserByEmail(email){
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user) return [null, "El usuario no existe"];
+    return [user, null];
+  } catch (error) {
+    handleError(error, "user.service -> getUserByEmail");
+  }
+}
 
 
 export default {
@@ -168,5 +177,6 @@ export default {
   getUserById,
   updateUser,
   deleteUser,
-  getUserImageByID
+  getUserImageByID,
+  getUserByEmail
 };

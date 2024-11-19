@@ -1,7 +1,10 @@
 import fs from "fs/promises";
 import { v4 as uuidv4 } from "uuid"; 
+import path from "path";
+import { fileURLToPath } from "url";
 
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Lee un archivo (imagen) de forma asíncrona desde el sistema de archivos y lo convierte en una cadena base64
@@ -39,9 +42,13 @@ async function saveImagePost(file) {
 async function saveImageProfile(file) {
   if (file) {
     const imageBuffer = file.buffer;
+    if (!imageBuffer) {
+      throw new Error("El buffer de la imagen es undefined");
+    }
     const extension = file.originalname.split('.').pop();
     const fileName = `${uuidv4()}.${extension}`;
-    await fs.writeFile(`src/uploads/profiles/${fileName}`, imageBuffer);
+    const filePath = path.join(__dirname, '../uploads/profiles', fileName);
+    await fs.writeFile(filePath, imageBuffer);
     return fileName;
   }
   return null;

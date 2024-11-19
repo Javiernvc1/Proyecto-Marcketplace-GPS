@@ -20,6 +20,7 @@ router.use(authenticationMiddleware);
 router.get("/", isAdmin, usuarioController.getUsers);
 router.post("/", isAdmin, usuarioController.createUser);
 router.get("/:id", usuarioController.getUserById);
+router.get("/email/:email", usuarioController.getUserByEmail);
 router.put("/:id", isAdmin, usuarioController.updateUser);
 router.delete("/:id", usuarioController.deleteUser);
 router.get("/getUserImageID/:id", usuarioController.getUserImageByID);

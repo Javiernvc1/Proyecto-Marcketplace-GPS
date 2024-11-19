@@ -1,6 +1,6 @@
 "use strict"
 
-const Joi = require('joi');
+import Joi from "joi";
 
 const postBodySchema = Joi.object({
     
@@ -18,11 +18,14 @@ const postBodySchema = Joi.object({
         "string.empty": "El autor no puede estar vacío",
         "any.required": "El autor es un campo requerido",
         "string.base": "El autor debe ser de tipo texto"
-    }).regex(/^[0-9a-fA-F]{24}$/).messages({
-        "string.pattern.base": "El ID del autor debe ser un ID válido"
-    })
+    }),
+    category: Joi.string().required().messages({
+        "string.empty": "La categoria no puede estar vacia",
+        "any.required": "La categoria es un campo requerido",
+        "string.base": "La categoria debe ser de tipo texto"
+    }),
 })
 
-module.exports = {
+export {
     postBodySchema
 }

@@ -5,6 +5,10 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from './routes/Root.jsx';
 import ErrorPage from './routes/ErrorPage.jsx';
 import Login from './routes/Login.jsx';
+import DashboardLayoutBasic from './pages/index.jsx';
+import PostsPage from './pages/postpage.jsx';
+import Post from './pages/modules/post.jsx';
+import CreatePost from './pages/modules/createpost.jsx';
 
 const router = createBrowserRouter([
   {
@@ -14,7 +18,21 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <App />,
+        element: <DashboardLayoutBasic />,
+        children: [
+          {
+            path: '/',
+            element: <PostsPage />,
+          },
+          {
+            path: '/posts/:id',
+            element: <Post />,
+          },
+          {
+            path: '/createpost',
+            element: <CreatePost />
+          },
+        ],
       },
     ],
   },

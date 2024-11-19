@@ -1,8 +1,15 @@
 import axios from "./root.service";
-
+import cookies from 'js-cookie';
 const headers = {
     'Content-Type': 'multipart/form-data'
   };
+  const getAuthHeaders = () => {
+    const token = cookies.get('jwt-auth'); // Obtén el token de autenticación de las cookies
+    return {
+        ...headers,
+        'Authorization': `Bearer ${token}`
+    };
+};
 
 export const register = async (formData) => {
     try {
@@ -11,6 +18,15 @@ export const register = async (formData) => {
 
     } catch (error) {
         console.log("FRONTEND: Error en user.service -> register",error);
+    }
+}
+
+export const getUserByEmail = async (email) => {
+    try {
+        const response = await axios.get(`users/email/${email}`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        console.log("FRONTEND: Error en user.service -> getUserByEmail", error);
     }
 }
 

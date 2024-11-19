@@ -25,7 +25,7 @@ function PageRoot() {
   return (
     <div>
       
-      <DashboardLayoutBasic />
+      { /*<DashboardLayoutBasic />*/}
       <Outlet />
     </div>
   );

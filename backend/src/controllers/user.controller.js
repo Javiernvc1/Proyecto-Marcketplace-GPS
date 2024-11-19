@@ -144,6 +144,19 @@ async function deleteUser(req, res) {
   }
 }
 
+async function getUserByEmail(req, res){
+  try {
+    const { email } = req.params;
+    const [user, error] = await UserService.getUserByEmail(email);
+    if (error) return respondError(req, res, 404, error);
+    respondSuccess(req, res, 200, user);
+  } catch (error) {
+    handleError(error, "user.controller -> getUserByEmail");
+    respondError(req, res, 400, error.message);
+  }
+}
+
+ 
 export default {
   getUsers,
   createUser,
@@ -151,4 +164,5 @@ export default {
   updateUser,
   deleteUser,
   getUserImageByID,
+  getUserByEmail
 };

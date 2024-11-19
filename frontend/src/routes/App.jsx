@@ -1,8 +1,12 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Root from './Root';
+
 function App() {
   return (
-    <>
-      <h1>Pagina principal</h1>
-    </>
+    <Routes>
+      <Route path="*" element={<Root />} />
+    </Routes>
   );
 }
 

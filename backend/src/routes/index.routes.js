@@ -9,6 +9,7 @@ import reportRoutes from "./report.routes.js";
 import notificationRoutes from "./notification.routes.js";
 import categoryRoutes from "./category.routes.js";
 import commentRoutes from "./comment.routes.js";
+import chatRoutes from "./chat.routes.js";
 
 /** Enrutador de autenticación */
 import authRoutes from "./auth.routes.js";
@@ -29,6 +30,6 @@ router.use("/reports", authenticationMiddleware, reportRoutes);
 router.use("/notifications", authenticationMiddleware, notificationRoutes);
 router.use("/categories", authenticationMiddleware, categoryRoutes);
 router.use("/comments", authenticationMiddleware, commentRoutes);
-
+router.use("/chat", chatRoutes);
 // Exporta el enrutador
 export default router;

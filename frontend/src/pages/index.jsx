@@ -13,7 +13,7 @@ import { useNavigate, Link, Route, Routes, Outlet } from 'react-router-dom';
 import logo from '../assets/logomarketplace.png';
 import { useAuth } from '../context/AuthContext';
 import Postspage from './postpage.jsx';
-
+import Conversations from './Conversations.jsx';
 
 const drawerWidth = 240;
 
@@ -34,6 +34,8 @@ function DashboardLayoutBasic() {
     navigate('/createpost');
   };
 
+
+
   const drawer = (
     <div>
       <Toolbar>
@@ -42,7 +44,8 @@ function DashboardLayoutBasic() {
       <List>
         {['Explorar todo', 'Mensajes', 'Mis Compras', 'Mis Ventas', 'Favoritos', 'Categorias'].map((text, index) => (
           
-          <ListItem button key={text} component={Link} to={text === 'Explorar todo' ? '/' : `/${text.toLowerCase().replace(/ /g, '-')}`}>
+          <ListItem button key={text} component={Link} to={text === 'Explorar todo' ? '/' : 
+          text === 'Mensajes' ? '/conversations' : `/${text.toLowerCase().replace(/ /g, '-')}`}>
             <ListItemIcon>
               {index === 0 ? <DashboardIcon /> : null}
               {index === 1 ? <EmailIcon /> : null}
@@ -127,10 +130,10 @@ function DashboardLayoutBasic() {
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` },bgcolor: 'white', minHeight: '300vh' , display: 'flex', flexDirection: 'column'}}
       >
         <Toolbar />
-        <Container>
+        <Container sx={{ flexGrow: 1, bgcolor: 'white', display: 'flex', flexDirection: 'column' }}>
         <Outlet />
         </Container>
       </Box>

@@ -1,16 +1,32 @@
 // frontend/src/pages/PostDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,  useNavigate} from "react-router-dom";
 import { getPostById } from "../../services/post.service";
-import { Container, Typography, Card, CardMedia, CardContent, Grid } from "@mui/material";
-
+import { getUserByEmail } from "../../services/user.service";
+import { startConversation } from "../../services/chat.service";
+import { Container, Typography, Card, CardMedia, CardContent, Grid, Button } from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
 
 
 const Post = () => {
   const { id } = useParams();
   const [post, setPost] = useState(null);
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
+
+    const fetchUserId = async () => {
+      try {
+        const userData = await getUserByEmail(user.email);
+        console.log("user", userData);
+        setUserId(userData.data._id);
+      } catch (error) {
+        console.error("Error al obtener el ID del usuario:", error);
+      }
+    };
+
     const fetchPost = async () => {
       try {
         const data = await getPostById(id);
@@ -20,9 +36,19 @@ const Post = () => {
         console.error("Error al obtener el post:", error);
       }
     };
-
+    fetchUserId();
     fetchPost();
   }, [id]);
+
+  const handleStartConversation = async () => {
+    try {
+      const response = await startConversation(userId, post._id);
+      const conversationId = response.data._id;
+      navigate(`/chat/${conversationId}`);
+    } catch (error) {
+      console.error("Error al iniciar la conversación:", error);
+    }
+  };
 
   if (!post) {
     return <Typography>Cargando...</Typography>;
@@ -47,7 +73,7 @@ const Post = () => {
             {post.description}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Autor: {post.author.name}
+            Autor: {post.author.name} {post.author.lastname}
           </Typography>
           <Typography variant="body2" color="textSecondary">
             Categoría: {post.category.nameCategory}
@@ -61,6 +87,9 @@ const Post = () => {
           <Typography variant="body2" color="textSecondary">
             Fecha de creación: {new Date(post.createdAt).toLocaleDateString()}
           </Typography>
+          <Button variant="contained" color="primary" onClick={handleStartConversation} >
+            Comenzar Conversación
+          </Button>
         </CardContent>
       </Card>
     </Container>

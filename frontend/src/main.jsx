@@ -9,6 +9,8 @@ import DashboardLayoutBasic from './pages/index.jsx';
 import PostsPage from './pages/postpage.jsx';
 import Post from './pages/modules/post.jsx';
 import CreatePost from './pages/modules/createpost.jsx';
+import Chat from "./pages/Chat";
+import Conversations from "./pages/Conversations";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +33,14 @@ const router = createBrowserRouter([
           {
             path: '/createpost',
             element: <CreatePost />
+          },
+          {
+            path: '/chat/:conversationId',
+            element: <Chat />,
+          },
+          {
+            path: '/conversations',
+            element: <Conversations />,
           },
         ],
       },

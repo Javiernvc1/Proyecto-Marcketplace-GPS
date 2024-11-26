@@ -4,7 +4,7 @@ import { useParams,  useNavigate} from "react-router-dom";
 import { getPostById } from "../../services/post.service";
 import { getUserByEmail } from "../../services/user.service";
 import { startConversation } from "../../services/chat.service";
-import { Container, Typography, Card, CardMedia, CardContent, Grid, Button } from "@mui/material";
+import { Container, Typography, Card, CardMedia, CardContent, Grid, Button, Snackbar, Alert  } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
 
 
@@ -14,6 +14,7 @@ const Post = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
   const { user } = useAuth();
+  const [alertOpen, setAlertOpen] = useState(false);
 
   useEffect(() => {
 
@@ -41,6 +42,12 @@ const Post = () => {
   }, [id]);
 
   const handleStartConversation = async () => {
+    if (post.author._id === userId) {
+      console.error("No puedes enviarte un mensaje a ti mismo.");
+      setAlertOpen(true);
+      return;
+    }
+
     try {
       const response = await startConversation(userId, post._id);
       const conversationId = response.data._id;
@@ -48,6 +55,10 @@ const Post = () => {
     } catch (error) {
       console.error("Error al iniciar la conversación:", error);
     }
+  };
+
+  const handleCloseAlert = () => {
+    setAlertOpen(false);
   };
 
   if (!post) {
@@ -73,7 +84,7 @@ const Post = () => {
             {post.description}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            Autor: {post.author.name} {post.author.lastname}
+            Autor: {post.author.name} {post.author.surname}
           </Typography>
           <Typography variant="body2" color="textSecondary">
             Categoría: {post.category.nameCategory}
@@ -92,6 +103,11 @@ const Post = () => {
           </Button>
         </CardContent>
       </Card>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleCloseAlert}>
+        <Alert onClose={handleCloseAlert} severity="error" sx={{ width: '100%' }}>
+          No puedes enviarte un mensaje a ti mismo.
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

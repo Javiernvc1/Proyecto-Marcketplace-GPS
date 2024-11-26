@@ -75,7 +75,7 @@ async function getPostById(id) {
         const post = await Post.findById({ _id: id })
             .populate({
                 path: 'author',
-                select: '_id name email'
+                select: '_id name surname email '
             })
             .populate({
                 path: 'category',
@@ -115,7 +115,7 @@ async function getUserPosts(id) {
 
         const publicationData = posts.map(post => ({
             ...post.toObject(),
-            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`),
+            images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
         }));
 
         return [publicationData, null];

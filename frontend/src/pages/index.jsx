@@ -42,10 +42,11 @@ function DashboardLayoutBasic() {
         <img src={logo} alt="Logo" style={{ width: '100%', padding: '10px' }}/>
       </Toolbar>
       <List>
-        {['Explorar todo', 'Mensajes', 'Mis Compras', 'Mis Ventas', 'Favoritos', 'Categorias'].map((text, index) => (
+        {['Explorar todo', 'Mensajes', 'Mis Compras', 'Mis Publicaciones', 'Favoritos', 'Categorias'].map((text, index) => (
           
           <ListItem button key={text} component={Link} to={text === 'Explorar todo' ? '/' : 
-          text === 'Mensajes' ? '/conversations' : `/${text.toLowerCase().replace(/ /g, '-')}`}>
+          text === 'Mensajes' ? '/conversations' : 
+          text === 'Mis Publicaciones' ? '/user-posts' :`/${text.toLowerCase().replace(/ /g, '-')}`}>
             <ListItemIcon>
               {index === 0 ? <DashboardIcon /> : null}
               {index === 1 ? <EmailIcon /> : null}

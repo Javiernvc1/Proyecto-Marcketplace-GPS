@@ -59,7 +59,7 @@ export const updatePost = async( postId, editedPost ) =>{
 
 export const deletePost = async(postId) => {
     try {
-        const response = await axios.delete(`/posts/${postId}`, )
+        const response = await axios.delete(`/posts/${postId}`, { headers: getAuthHeaders() })
         return response;
     } catch (error) {
         console.log("FRONTEND: Error en post.service -> getPosts", error);

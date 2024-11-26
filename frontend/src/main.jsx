@@ -11,6 +11,7 @@ import Post from './pages/modules/post.jsx';
 import CreatePost from './pages/modules/createpost.jsx';
 import Chat from "./pages/Chat";
 import Conversations from "./pages/Conversations";
+import UserPosts from "./pages/UserPost";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
           {
             path: '/conversations',
             element: <Conversations />,
+          },
+          {
+            path: '/user-posts',
+            element: <UserPosts />,
           },
         ],
       },

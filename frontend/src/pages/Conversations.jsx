@@ -54,6 +54,7 @@ const Conversations = () => {
       <List>
       {conversations.map((conversation) => {
           const otherParticipant = conversation.participants.find(participant => participant._id !== userId);
+          console.log("other: ",otherParticipant);
           const lastMessage = conversation.messages[conversation.messages.length - 1];
           const imageUrl = `${API_URL}/uploads/images/${conversation.post.images[0]}`;
           return (

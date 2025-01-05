@@ -1,12 +1,12 @@
 // frontend/src/pages/PostDetails.jsx
 import React, { useEffect, useState } from "react";
 import { useParams,  useNavigate} from "react-router-dom";
-import { getPostById } from "../../services/post.service";
+import { getPostById, savePostAsFavorite  } from "../../services/post.service";
 import { getUserByEmail } from "../../services/user.service";
 import { startConversation } from "../../services/chat.service";
-import { Container, Typography, Card, CardMedia, CardContent, Grid, Button, Snackbar, Alert  } from "@mui/material";
+import { Container, Typography, Card, CardMedia, CardContent, Grid, Button, Snackbar, Alert, IconButton  } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
-
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const Post = () => {
   const { id } = useParams();
@@ -15,7 +15,7 @@ const Post = () => {
   const [userId, setUserId] = useState(null);
   const { user } = useAuth();
   const [alertOpen, setAlertOpen] = useState(false);
-
+  const [favorite, setFavorite] = useState(false);
   useEffect(() => {
 
     const fetchUserId = async () => {
@@ -39,7 +39,17 @@ const Post = () => {
     };
     fetchUserId();
     fetchPost();
-  }, [id]);
+  }, [id, user.email]);
+
+  const handleFavorite = async () => {
+    try {
+      await savePostAsFavorite(userId, post._id);
+      setFavorite(!favorite);
+      alert("Publicación guardada como favorita");
+    } catch (error) {
+      console.error("Error al guardar la publicación como favorita:", error);
+    }
+  };
 
   const handleStartConversation = async () => {
     if (post.author._id === userId) {
@@ -101,6 +111,9 @@ const Post = () => {
           <Button variant="contained" color="primary" onClick={handleStartConversation} >
             Comenzar Conversación
           </Button>
+          <IconButton onClick={handleFavorite} color="secondary">
+            <FavoriteIcon />
+          </IconButton>
         </CardContent>
       </Card>
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleCloseAlert}>

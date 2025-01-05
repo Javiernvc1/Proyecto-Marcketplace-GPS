@@ -52,9 +52,23 @@ async function getUserConversations(req, res) {
   }
 }
 
+async function deleteConversation(req, res) {
+  try {
+    const { conversationId } = req.params;
+    const [result, error] = await ChatService.deleteConversation(conversationId);
+    
+    if (error) return respondError(req, res, 400, error);
+    respondSuccess(req, res, 200, result);
+  } catch (error) {
+    handleError(error, "chat.controller -> deleteConversation");
+    respondError(req, res, 500, "No se pudo eliminar la conversación");
+  }
+}
+
 export default {
   startConversation,
   sendMessage,
   getConversation,
   getUserConversations,
+  deleteConversation,
 };

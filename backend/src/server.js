@@ -49,25 +49,32 @@ async function setupServer() {
     // Configurar Socket.IO
     const io = new SocketIOServer(server, {
       cors: {
-        origin: "*",
+        origin: "http://localhost:5173",
         methods: ["GET", "POST"],
+        credentials: true
       },
     });
 
+    // Manejar eventos de Socket.IO
     io.on("connection", (socket) => {
-      console.log("Nuevo cliente conectado:", socket.id);
-
-      socket.on("disconnect", () => {
-        console.log("Cliente desconectado:", socket.id);
+      console.log("Client connected:", socket.id);
+      
+      socket.on("joinRoom", (conversationId) => {
+        socket.join(conversationId);
+        console.log(`User ${socket.id} joined room ${conversationId}`);
       });
-
-      socket.on("chatMessage", (msg) => {
-        io.emit("chatMessage", msg);
+    
+      socket.on("chatMessage", (message) => {
+        io.to(message.conversationId).emit("chatMessage", message);
+      });
+    
+      socket.on("disconnect", () => {
+        console.log("Client disconnected:", socket.id);
       });
     });
 
     // Inicia el servidor en el puerto especificado
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
     });
   } catch (err) {

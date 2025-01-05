@@ -11,4 +11,5 @@ router.post("/start", chatController.startConversation);
 router.post("/send", chatController.sendMessage);
 router.get("/:conversationId", chatController.getConversation);
 router.get("/user/:userId", chatController.getUserConversations);
+router.delete("/:conversationId", chatController.deleteConversation);
 export default router;

@@ -68,31 +68,70 @@ export const deletePost = async(postId) => {
 }
 
 
-export const savePostAsFavorite = async( postId, userId) => {
+export const savePostAsFavorite = async (userId, postId) => {
+    console.log("FRONTEND: savePostAsFavorite -> userId, postId", userId, postId);
     try {
-        const response = await axios.post(`/posts/favorite/${postId}`, {userId});
-        return response;
+      // Asegúrate de que los datos se envíen como un objeto JSON
+      const response = await axios.post(
+        `/posts/favorite`, 
+        { userId, postId }, 
+        { 
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${cookies.get('jwt-auth')}`
+          }
+        }
+      );
+      return response.data;
     } catch (error) {
       console.log("FRONTEND: Error en post.service -> savePostAsFavorite", error);
+      throw error; // Propaga el error para manejarlo en el componente
     }
-}
-  
+  };
 
-export const getUserFavoritePosts = async(userId) =>{
+  export const getUserFavoritePosts = async (userId) => {
     try {
-        const response = await axios.get(`/posts/getUserFavoritePosts/${userId}`);
-        return response;
+      const response = await axios.get(`/posts/getUserFavoritePosts/${userId}`, { headers: getAuthHeaders() });
+      return response.data;
     } catch (error) {
       console.log("FRONTEND: Error en post.service -> getUserFavoritePosts", error);
     }
-}
+  };
 
-export const getPostByCategory = async(categoryId) => {
+  export const getPostByCategory = async (categoryId) => {
     try {
-        const response = await axios.get(`/posts/category/${categoryId}`);
-        return response;
+      const response = await axios.get(`/posts/category/${categoryId}`, { headers: getAuthHeaders() });
+      return response.data;
+    } catch (error) {
+      console.log("FRONTEND: Error en post.service -> getPostByCategory", error);
     }
-    catch (error) {
-        console.log("FRONTEND: Error en post.service -> getPostByCategory", error);
+  };
+
+  export const searchPosts = async (query) => {
+    try {
+      const response = await axios.get(`/posts/search?query=${query}`, { headers: getAuthHeaders() });
+      return response.data;
+    } catch (error) {
+      console.log("FRONTEND: Error en post.service -> searchPosts", error);
     }
-}
+  };
+
+  export const removeFavoritePost = async (userId, postId) => {
+    try {
+      console.log("FRONTEND: removeFavoritePost -> userId, postId", userId, postId);
+      const response = await axios.post(
+        `/posts/removeFavorite`, 
+        { userId, postId },
+        { 
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json' // Asegurarse de que el Content-Type sea correcto
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.log("FRONTEND: Error en post.service -> removeFavoritePost", error);
+      throw error;
+    }
+  };

@@ -33,13 +33,19 @@ async function getUsers() {
  */
 async function createUser(user, file = null) {
   try {
-    const {name, surname, username, description, gender, email, password, profilePicture, roleUser } = user;
+    const { name, surname, username, description, gender, email, password, profilePicture, roleUser } = user;
+
+    // Validar el dominio del correo
+    if (!email.endsWith('@alumnos.ubiobio.cl') && !email.endsWith('@ubiobio.cl')) {
+      return [null, "Solo se permiten correos institucionales (@alumnos.ubiobio.cl o @ubiobio.cl)"];
+    }
 
     const userFound = await User.findOne({ email: user.email });
     if (userFound) return [null, "El usuario ya existe"];
 
     const rolesFound = await Role.find({ name: { $in: roleUser } });
     if (rolesFound.length === 0) return [null, "El rol no existe"];
+    
     const myRole = rolesFound.map((role) => role._id);
     const imgPicture = await saveImageProfile(profilePicture);
 
@@ -59,6 +65,7 @@ async function createUser(user, file = null) {
     return [newUser, null];
   } catch (error) {
     handleError(error, "user.service -> createUser");
+    return [null, error.message];
   }
 }
 
@@ -170,6 +177,18 @@ async function getUserByEmail(email){
   }
 }
 
+async function getUserPurchases(userId) {
+  try {
+    const user = await User.findById(userId).populate("buys");
+    console.log("user purs", user);
+    if (!user) return [null, "Usuario no encontrado"];
+    return [user.buys, null];
+  } catch (error) {
+
+    handleError(error, "user.service -> getUserPurchases");
+    return [null, error.message];
+  }
+}
 
 export default {
   getUsers,
@@ -178,5 +197,6 @@ export default {
   updateUser,
   deleteUser,
   getUserImageByID,
-  getUserByEmail
+  getUserByEmail,
+  getUserPurchases
 };

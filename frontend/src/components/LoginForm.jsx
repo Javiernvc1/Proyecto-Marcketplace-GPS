@@ -10,7 +10,7 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-
+import { Link as RouterLink } from 'react-router-dom';
 function LoginForm() {
   const navigate = useNavigate();
   const {
@@ -81,7 +81,25 @@ function LoginForm() {
           >
             Entrar
           </Button>
-          
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Typography variant="body2" sx={{ color: 'black' }}>
+            ¿No tienes una cuenta?{' '}
+            <Link
+              component={RouterLink}
+              to="/register"
+              variant="body2"
+              sx={{
+                color: '#438bcb',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              Regístrate aquí
+            </Link>
+          </Typography>
+        </Box>
         </Box>
       </Box>
     </Container>

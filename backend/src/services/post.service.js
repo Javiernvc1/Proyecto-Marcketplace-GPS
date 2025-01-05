@@ -11,33 +11,56 @@ import { saveImagePost } from "../utils/generalUtils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function getPosts() {
-    try {
-        const posts = await Post.find()
-            .populate({
-                path: 'author',
-                select: '_id name'
-            })
-            .populate({
-                path: 'category',
-                select: '_id nameCategory'
-            })
-        if (!posts) {
-            return [null, "No se encontraron publicaciones"];
-        }
+// backend/src/services/post.service.js
+async function getPosts(userId = null) {
+  try {
+      let query = {};
+      
+      if (userId) {
+          // If userId is provided, include posts that are:
+          // 1. Active (visible to everyone)
+          // 2. Paused (visible only to author and users who have purchased)
+          query = {
+              $or: [
+                  { state: "activo" },
+                  { 
+                      state: "pausado",
+                      $or: [
+                          { author: userId },
+                          { 'sales.buyer': userId }
+                      ]
+                  }
+              ]
+          };
+      } else {
+          // If no userId, only show active posts
+          query = { state: "activo" };
+      }
 
-        const publicationData = posts.map(post => ({
-            ...post.toObject(),
-            images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
-        }));
+      const posts = await Post.find(query)
+          .populate({
+              path: 'author',
+              select: '_id name'
+          })
+          .populate({
+              path: 'category',
+              select: '_id nameCategory'
+          });
 
-        console.log(publicationData);
-        return [publicationData, null];
+      if (!posts) {
+          return [null, "No se encontraron publicaciones"];
+      }
 
-    } catch (error) {
-        handleError(error, "post.service -> getPosts");
-        return [null, error.message];
-    }
+      const publicationData = posts.map(post => ({
+          ...post.toObject(),
+          images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
+      }));
+
+      return [publicationData, null];
+  } catch (error) {
+      handleError(error, "post.service -> getPosts");
+      return [null, error.message];
+  }
 }
 
 async function createPost(post, files = []) {
@@ -126,19 +149,28 @@ async function getUserPosts(id) {
     }
 }
 
+// backend/src/services/post.service.js
 async function updatePost(id, body) {
     try {
         const post = await Post.findById(id);
         if(!post) return [null, `No se encontro la publicacion de id: ${id}`];
-        const { title, description, category, status } = body;
+        
+        const { title, description, category, state } = body;
+        
+        // Validar estados permitidos
+        if (state && !["activo", "pausado", "cerrado"].includes(state)) {
+            return [null, "Estado no válido"];
+        }
+
         const postUpdated = await Post.findByIdAndUpdate(
             id,
-            { title, description, category, status },
+            { title, description, category, state },
             { new: true }
         );
         return [postUpdated, null];
     } catch (error) {
         handleError(error, "post.service -> updatePost");
+        return [null, error.message];
     }
 }
 
@@ -156,83 +188,174 @@ async function deletePost(id){
     }
 }
 
-async function savePostAsFavorite(userId, postId){
+async function savePostAsFavorite(userId, postId) {
     try {
-        const userFound = await User.findById(userId);
-        if(!userFound) return [null, 'Usuario no encontrado'];
-        
-        const postFound = await Post.findById(postId);
-        if(!postFound) return [null, 'Publicacion no encontrada'];
-
-        // Verificar si el post ya está guardado como favorito por el usuario
-        const isSaved = userFound.favorites.includes(postId);
-
-        if (isSaved) {
-            // Si ya está guardado, quitarlo de los favoritos
-            console.log("Ya la tenia guardado, se quito de favoritos");
-            userFound.favorites = userFound.favorites.filter(favorites => favorites.toString() !== postId);
-        } else {
-            // Si no está guardado, añadirlo a los favoritos
-            console.log("No lo tenia guardado, se agrego a favoritos");
-            userFound.favorites.push(postFound.id);
-        }
-        await userFound.save();
-        return [userFound, null];
-
+      const userFound = await User.findById(userId);
+      if (!userFound) return [null, 'Usuario no encontrado'];
+  
+      const postFound = await Post.findById(postId);
+      if (!postFound) return [null, 'Publicación no encontrada'];
+  
+      const isSaved = userFound.favorites.includes(postId);
+  
+      if (isSaved) {
+        userFound.favorites = userFound.favorites.filter(favorites => favorites.toString() !== postId);
+      } else {
+        userFound.favorites.push(postFound.id);
+      }
+  
+      await userFound.save();
+      return [userFound, null];
     } catch (error) {
-        handleError(error, "post.service -> savePostAsFavorite");
-        return [null, error.message];
+      handleError(error, "post.service -> savePostAsFavorite");
+      return [null, error.message];
     }
-}
+  }
 
-async function getPostsByCategory( categoryId ){
+  async function getPostByCategory(categoryId) {
     try {
-        const categoryFound = await Category.findById(categoryId);
-        if(!categoryFound) return [null, `No se encontro categoria de id: ${categoryId}`];
-
-        const posts = await Post.find({ category: hashtagId })
-            .populate( { path: 'author', select: "_id name"})
-            .populate( { path: 'category', select: "_id nameCategory"})
-
-        if(!posts) return [null, "No se encontraron posts que contengan esa categoria"];
-
-        const publicationData = posts.map(post => ({
-            ...post.toObject(),
-            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`),
-        }));
-        
-
-        return [{ posts: publicationData, category: categoryFound }, null];
+      const categoryFound = await Category.findById(categoryId);
+      if (!categoryFound) return [null, `No se encontró categoría con id: ${categoryId}`];
+  
+      const posts = await Post.find({ category: categoryId })
+        .populate({ path: 'author', select: "_id name" })
+        .populate({ path: 'category', select: "_id nameCategory" });
+  
+      if (!posts) return [null, "No se encontraron publicaciones para esta categoría"];
+  
+      const publicationData = posts.map(post => ({
+        ...post.toObject(),
+        images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
+      }));
+  
+      return [publicationData, null];
     } catch (error) {
-        console.log("Error en post.service-> getPostByCategory", error);
+      handleError(error, "post.service -> getPostByCategory");
+      return [null, error.message];
     }
-}
+  }
 
 async function getUserFavoritePosts(userId){
     try {
         const user = await User.findById(userId).populate({
-            path: 'savedPosts',
+            path: 'favorites',
             populate: [{
                 path: 'author',
                 select: '_id name'
             },{
                 path: 'category',
-                select: '_id category'
+                select: '_id nameCategory'
             }]
         });
         if (!user) return [null, `No se encontró el usuario con id: ${userId}`];
-
-        const favoritePosts = user.savedPosts.map(post => ({
+  
+        const favoritePosts = user.favorites.map(post => ({
             ...post.toObject(),
-            images: post.images.map(imageName => `${HOST}${PORT}/uploads/images/${imageName}`)
+            images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`)
         }));
-
+  
         return [favoritePosts, null];
     } catch (error) {
         handleError(error, "post.service -> getUserFavoritePosts");
         return [null, error.message];
     }
+  }
+
+async function markAsSold(postId, userId) {
+    try {
+      const post = await Post.findById(postId);
+      if (!post) return [null, "Publicación no encontrada"];
+  
+      const buyer = await User.findById(userId);
+      if (!buyer) return [null, "Comprador no encontrado"];
+  
+      post.sales.push({ buyer: userId });
+      await post.save();
+  
+      buyer.buys.push(postId);
+      await buyer.save();
+  
+      return [post, null];
+    } catch (error) {
+      handleError(error, "post.service -> markAsSold");
+      return [null, error.message];
+    }
+  }
+
+async function searchPosts(query) {
+  try {
+    // Diccionario de palabras relacionadas
+    const relatedWords = {
+      'deportes': ['deportivo', 'deporte', 'deportiva', 'equipamiento deportivo', 'deportistas'],
+      'libros': ['libro', 'textos', 'texto', 'académico', 'académicos'],
+      'electrónica': ['electronica','electrónico', 'electrónicos', 'electrónicas', 'tecnología'],
+      'instrumentos': ['musica','música', 'musical', 'musicales'],
+      'arriendo': ['arriendos', 'alquiler', 'alquileres', 'renta'],
+      'tutoria': ['tutorias', 'clases', 'enseñanza', 'particular']
+    };
+
+    // Obtener palabras relacionadas con la búsqueda
+    const searchTerms = [query.toLowerCase()];
+    Object.entries(relatedWords).forEach(([key, values]) => {
+      if (values.includes(query.toLowerCase()) || key === query.toLowerCase()) {
+        searchTerms.push(...values);
+        searchTerms.push(key);
+      }
+    });
+
+    // Crear patrón de búsqueda con todas las palabras relacionadas
+    const searchPattern = searchTerms.join('|');
+
+    // Buscar categorías que coincidan con cualquiera de los términos
+    const categories = await Category.find({
+      nameCategory: { $regex: searchPattern, $options: "i" }
+    });
+
+    const categoryIds = categories.map(cat => cat._id);
+
+    // Buscar posts que coincidan con el título o descripción o que pertenezcan a las categorías encontradas
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: searchPattern, $options: "i" } },
+        { description: { $regex: searchPattern, $options: "i" } },
+        { category: { $in: categoryIds } }
+      ]
+    })
+    .populate({ path: 'author', select: "_id name" })
+    .populate({ path: 'category', select: "_id nameCategory" });
+
+    if (!posts) return [null, "No se encontraron publicaciones"];
+
+    const publicationData = posts.map(post => ({
+      ...post.toObject(),
+      images: post.images.map(imageName => `${URL}${PORT}/uploads/images/${imageName}`),
+    }));
+
+    return [publicationData, null];
+  } catch (error) {
+    handleError(error, "post.service -> searchPosts");
+    return [null, error.message];
+  }
 }
+
+async function removeFavoritePost(userId, postId) {
+  try {
+    console.log("BACKEND SERVICE: removeFavoritePost -> userId, postId", userId, postId); // Agregar log para debug
+    
+    const user = await User.findById(userId);
+    if (!user) return [null, 'Usuario no encontrado'];
+
+    user.favorites = user.favorites.filter(favorite => favorite.toString() !== postId);
+    await user.save();
+
+    return [user, null];
+  } catch (error) {
+    handleError(error, "post.service -> removeFavoritePost");
+    return [null, error.message];
+  }
+}
+
+
 
 export default {
     getPosts,
@@ -242,6 +365,9 @@ export default {
     updatePost,
     deletePost,
     savePostAsFavorite,
-    getPostsByCategory,
-    getUserFavoritePosts
+    getPostByCategory,
+    getUserFavoritePosts,
+    markAsSold,
+    searchPosts,
+    removeFavoritePost
 }

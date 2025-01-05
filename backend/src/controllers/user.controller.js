@@ -12,9 +12,7 @@ import { respondSuccess, respondError } from "../utils/resHandler.js";
  */
 async function getUsers(req, res) {
   try {
-    const [usuarios, errorUsuarios] = await UserService.getUsers();
-    if (errorUsuarios) return respondError(req, res, 404, errorUsuarios);
-
+    const [usuarios, errorUsuarios] = await UserService.getUsers();    if (errorUsuarios) return respondError(req, res, 404, errorUsuarios);
     usuarios.length === 0
       ? respondSuccess(req, res, 204)
       : respondSuccess(req, res, 200, usuarios);
@@ -52,11 +50,12 @@ async function getUserImageByID(req, res){
  */
 async function createUser(req, res) {
   try {
-    const { body } = req;
-    const { error: bodyError } = userBodySchema.validate(body);
+    const { name, surname, username, description, gendre, email, password  } = req.body;
+    console.log(req.body);
+    const { error: bodyError } = userBodySchema.validate(req.body);
     if (bodyError) return respondError(req, res, 400, bodyError.message);
 
-    const [newUser, userError] = await UserService.createUser(body);
+    const [newUser, userError] = await UserService.createUser(req.body);
 
     if (userError) return respondError(req, res, 400, userError);
     if (!newUser) {
@@ -156,6 +155,17 @@ async function getUserByEmail(req, res){
   }
 }
 
+async function getUserPurchases(req, res) {
+  try {
+    const { id } = req.params;
+    const [purchases, error] = await UserService.getUserPurchases(id);
+    if (error) return respondError(req, res, 400, error);
+    respondSuccess(req, res, 200, purchases);
+  } catch (error) {
+    handleError(error, "user.controller -> getUserPurchases");
+    respondError(req, res, 500, "No se pudieron obtener las compras del usuario");
+  }
+}
  
 export default {
   getUsers,
@@ -164,5 +174,6 @@ export default {
   updateUser,
   deleteUser,
   getUserImageByID,
-  getUserByEmail
+  getUserByEmail,
+  getUserPurchases
 };

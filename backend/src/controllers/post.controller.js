@@ -6,7 +6,9 @@ import PostService from "../services/post.service.js";
 import { postBodySchema } from "../schema/post.schema.js";
 async function getPosts(req, res) {
     try {
-        const [posts, error] = await PostService.getPosts();
+        const userId = req.user?._id; // Get user ID from request if available
+        const [posts, error] = await PostService.getPosts(userId);
+        
         if (error) return respondError(req, res, 404, error);
 
         posts.length === 0
@@ -21,6 +23,7 @@ async function getPosts(req, res) {
 async function createPost(req, res) {
     try {
         const { title, description, author, category } = req.body;
+        console.log("req.body", req.body);
         const { error: bodyError} = postBodySchema.validate(req.body);
         if (bodyError) return respondError(req, res, 400, bodyError.message);
         const post = { title, description, author, category };
@@ -104,31 +107,30 @@ async function deletePost(req, res) {
 
 async function savePostAsFavorite(req, res) {
     try {
-        const { postId } = req.params;
-        const { userId} = req.body;
-        const [post, error] = await PostService.savePostAsFavorite(userId, postId);
-
-        if (error) return respondError(req, res, 404, error);
-        respondSuccess(req, res, 200, post);
+      const { userId, postId } = req.body;
+      console.log("postId:", postId, "userId:", userId);
+      const [post, error] = await PostService.savePostAsFavorite(userId, postId);
+  
+      if (error) return respondError(req, res, 404, error);
+      respondSuccess(req, res, 200, post);
     } catch (error) {
-        handleError(error, "post.controller -> savePostAsFavorite");
-        respondError(req, res, 400, error.message);
+      handleError(error, "post.controller -> savePostAsFavorite");
+      respondError(req, res, 400, error.message);
     }
-}
-
-async function getPostByCategory(req, res) {
+  }
+  async function getPostByCategory(req, res) {
     try {
-        const { params } = req;
-        const { categoryId } = params;
-        const [posts, error] = await PostService.getPostByCategory(categoryId);
-
-        if (error) return respondError(req, res, 404, error);
-        respondSuccess(req, res, 200, posts);
+      const { categoryId } = req.params;
+      console.log("categoryId:", categoryId);
+      const [posts, error] = await PostService.getPostByCategory(categoryId);
+  
+      if (error) return respondError(req, res, 404, error);
+      respondSuccess(req, res, 200, posts);
     } catch (error) {
-        handleError(error, "post.controller -> getPostByCategory");
-        respondError(req, res, 400, error.message);
+      handleError(error, "post.controller -> getPostByCategory");
+      respondError(req, res, 400, error.message);
     }
-}
+  }
 
 async function getUserFavoritePosts(req, res){
     try {
@@ -143,6 +145,50 @@ async function getUserFavoritePosts(req, res){
     }
 }
 
+async function markAsSold(req, res) {
+    try {
+      const { postId, userId } = req.body;
+      const [updatedPost, error] = await PostService.markAsSold(postId, userId);
+      if (error) return respondError(req, res, 400, error);
+      respondSuccess(req, res, 200, updatedPost);
+    } catch (error) {
+      handleError(error, "post.controller -> markAsSold");
+      respondError(req, res, 500, "No se pudo marcar la venta como realizada");
+    }
+  }
+
+  async function searchPosts(req, res) {
+    try {
+      const { query } = req.query;
+      const [posts, error] = await PostService.searchPosts(query);
+  
+      if (error) return respondError(req, res, 404, error);
+      respondSuccess(req, res, 200, posts);
+    } catch (error) {
+      handleError(error, "post.controller -> searchPosts");
+      respondError(req, res, 400, error.message);
+    }
+  }
+
+  async function removeFavoritePost(req, res) {
+    try {
+      const { userId, postId } = req.body;
+      console.log("BACKEND: removeFavoritePost -> userId, postId", userId, postId); // Agregar log para debug
+      
+      if (!userId || !postId) {
+        return respondError(req, res, 400, "UserId y postId son requeridos");
+      }
+  
+      const [user, error] = await PostService.removeFavoritePost(userId, postId);
+  
+      if (error) return respondError(req, res, 404, error);
+      respondSuccess(req, res, 200, user);
+    } catch (error) {
+      handleError(error, "post.controller -> removeFavoritePost");
+      respondError(req, res, 400, error.message);
+    }
+  }
+
 export default {
     getPosts,
     createPost,
@@ -152,5 +198,8 @@ export default {
     deletePost,
     savePostAsFavorite,
     getPostByCategory,
-    getUserFavoritePosts
+    getUserFavoritePosts,
+    markAsSold,
+    searchPosts,
+    removeFavoritePost
 }

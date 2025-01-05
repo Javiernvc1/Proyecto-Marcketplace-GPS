@@ -13,13 +13,13 @@ const headers = {
 
 
 export const getCategories = async () => {
-    try{
-        const response = await axios.get("/categories", { headers: getAuthHeaders() })
-        return response.data
+    try {
+      const response = await axios.get("/categories", { headers: getAuthHeaders() });
+      return response.data;
     } catch (error) {
-        console.log(error);
+      console.log("FRONTEND: Error en category.service -> getCategories", error);
     }
-}
+  };
 
 export const createCategory = async (categoryData) => {
     try{

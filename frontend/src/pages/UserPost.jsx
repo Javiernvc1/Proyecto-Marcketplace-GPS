@@ -2,16 +2,21 @@
 import React, { useEffect, useState } from "react";
 import { getUserPosts, deletePost } from "../services/post.service";
 import { useAuth } from "../context/AuthContext";
-import { Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Button, IconButton } from "@mui/material";
+import { Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Button, IconButton, Menu, MenuItem } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getUserByEmail } from "../services/user.service";
+import EditIcon from '@mui/icons-material/Edit'; 
 const API_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3001';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 const UserPosts = () => {
   const [posts, setPosts] = useState([]);
   const { user } = useAuth();
   const [userId, setUserId] = useState(null);
+  const navigate = useNavigate(); 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -52,6 +57,13 @@ const UserPosts = () => {
     }
   };
 
+  const handleEditPost = (event, postId) => {
+    event.preventDefault(); // Prevenir navegación del Link
+    navigate(`/edit-post/${postId}`); // Navegar a la página de edición
+  };
+
+  
+
   if (!posts || posts.length === 0) {
     return <Typography>No hay publicaciones disponibles</Typography>;
   }
@@ -63,8 +75,6 @@ const UserPosts = () => {
       </Typography>
       <List>
         {posts.map((post) => (
-            
-        
           <ListItem key={post._id} component={Link} to={`/posts/${post._id}`} button>
             <ListItemAvatar>
               <Avatar src={post.images[0]} alt={post.title} />
@@ -73,11 +83,22 @@ const UserPosts = () => {
               primary={post.title}
               secondary={post.description}
             />
-            <IconButton edge="end" aria-label="delete" onClick={() => handleDeletePost(post._id)}>
+            <IconButton 
+              edge="end" 
+              aria-label="edit" 
+              onClick={(e) => handleEditPost(e, post._id)}
+              sx={{ mr: 1 }} // Agregar margen derecho
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton 
+              edge="end" 
+              aria-label="delete" 
+              onClick={() => handleDeletePost(post._id)}
+            >
               <DeleteIcon />
             </IconButton>
           </ListItem>
-         
         ))}
       </List>
     </Container>

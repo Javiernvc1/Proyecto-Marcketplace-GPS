@@ -39,12 +39,17 @@ const userBodySchema = Joi.object({
     "string.base": "La contraseña debe ser de tipo string.",
     "string.min": "La contraseña debe tener al menos 5 caracteres.",
   }),
-  email: Joi.string().email().required().messages({
-    "string.empty": "El email no puede estar vacío.",
-    "any.required": "El email es obligatorio.",
-    "string.base": "El email debe ser de tipo string.",
-    "string.email": "El email debe tener un formato válido.",
-  }),
+  email: Joi.string()
+    .email()
+    .pattern(/^[a-zA-Z0-9._%+-]+@(alumnos\.ubiobio\.cl|ubiobio\.cl)$/)
+    .required()
+    .messages({
+      "string.empty": "El email no puede estar vacío.",
+      "any.required": "El email es obligatorio.",
+      "string.base": "El email debe ser de tipo string.",
+      "string.email": "El email debe tener un formato válido.",
+      "string.pattern.base": "Solo se permiten correos @alumnos.ubiobio.cl o @ubiobio.cl",
+    }),
   roleUser: Joi.array()
     .items(Joi.string().valid(...ROLES))
     .required()

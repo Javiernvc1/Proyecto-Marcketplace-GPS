@@ -42,6 +42,18 @@ const postSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Comment",
         }],
+        sales: [
+          {
+            buyer: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+            },
+            date: {
+              type: Date,
+              default: Date.now,
+            },
+          },
+        ],
     }
 );
 

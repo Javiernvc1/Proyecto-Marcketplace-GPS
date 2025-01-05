@@ -13,13 +13,13 @@ const headers = {
 
 export const register = async (formData) => {
     try {
-
-        return axios.post("users/", formData, { headers })
-
+      console.log("FRONTEND: user.service -> register -> formData", formData);
+      
+      return axios.post("users/register", formData, { headers: getAuthHeaders() });
     } catch (error) {
-        console.log("FRONTEND: Error en user.service -> register",error);
+      console.log("FRONTEND: Error en user.service -> register", error);
     }
-}
+  };
 
 export const getUserByEmail = async (email) => {
     try {
@@ -67,6 +67,15 @@ export const updateUser = async(id, editedProfile) => {
         console.log("FRONTEND: Error en user.service -> updateUser()");
     }
 }
+
+export const getUserPurchases = async (userId) => {
+    try {
+      const response = await axios.get(`/users/${userId}/purchases`, { headers: getAuthHeaders() });
+      return response.data;
+    } catch (error) {
+      console.log("FRONTEND: Error en user.service -> getUserPurchases", error);
+    }
+  };
 
 /*export const getUserFollowedHashtags = async (id) => {
     try {

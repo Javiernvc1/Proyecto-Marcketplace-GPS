@@ -35,3 +35,22 @@ export const getUserConversations = async (userId) => {
     console.error("Error en chat.service -> getUserConversations", error);
   }
 };
+
+export const markAsSold = async (postId, userId) => {
+  try {
+    const response = await axios.post(`/posts/markAsSold`, { postId, userId });
+    return response.data;
+  } catch (error) {
+    console.error("Error en chat.service -> markAsSold", error);
+  }
+};
+
+export const deleteConversation = async (conversationId) => {
+  try {
+    const response = await axios.delete(`/chat/${conversationId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error en chat.service -> deleteConversation", error);
+    throw error;
+  }
+};

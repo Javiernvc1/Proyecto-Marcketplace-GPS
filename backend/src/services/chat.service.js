@@ -90,9 +90,27 @@ async function getUserConversations(userId) {
   }
 }
 
+async function deleteConversation(conversationId) {
+  try {
+    const conversation = await Conversation.findByIdAndDelete(conversationId);
+    if (!conversation) return [null, "Conversación no encontrada"];
+    
+    // También eliminar todos los mensajes asociados
+    await Message.deleteMany({ conversation: conversationId });
+    
+    return [{ message: "Conversación eliminada exitosamente" }, null];
+  } catch (error) {
+    handleError(error, "chat.service -> deleteConversation");
+    return [null, error.message];
+  }
+}
+
+
+
 export default {
   startConversation,
   sendMessage,
   getConversation,
   getUserConversations,
+  deleteConversation,
 };

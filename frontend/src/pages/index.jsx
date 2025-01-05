@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Box, Container, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Box, Container, Button, InputBase } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import SearchIcon from '@mui/icons-material/Search';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import EmailIcon from '@mui/icons-material/Email';
 import SellIcon from '@mui/icons-material/Sell';
@@ -14,11 +15,55 @@ import logo from '../assets/logomarketplace.png';
 import { useAuth } from '../context/AuthContext';
 import Postspage from './postpage.jsx';
 import Conversations from './Conversations.jsx';
+import { alpha, styled } from '@mui/material/styles';
 
 const drawerWidth = 240;
 
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(1),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: '12ch',
+      '&:focus': {
+        width: '20ch',
+      },
+    },
+  },
+}));
+
 function DashboardLayoutBasic() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const navigate = useNavigate();
   
   const handleDrawerToggle = () => {
@@ -34,7 +79,14 @@ function DashboardLayoutBasic() {
     navigate('/createpost');
   };
 
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    navigate(`/search?query=${searchQuery}`);
+  };
 
   const drawer = (
     <div>
@@ -46,7 +98,10 @@ function DashboardLayoutBasic() {
           
           <ListItem button key={text} component={Link} to={text === 'Explorar todo' ? '/' : 
           text === 'Mensajes' ? '/conversations' : 
-          text === 'Mis Publicaciones' ? '/user-posts' :`/${text.toLowerCase().replace(/ /g, '-')}`}>
+          text === 'Mis Compras' ? '/my-purchases' :
+          text === 'Mis Publicaciones' ? '/user-posts' :
+          text === 'Favoritos' ? '/favorites' :
+          text === 'Categorias' ? '/categories' : `/${text.toLowerCase().replace(/ /g, '-')}`}>
             <ListItemIcon>
               {index === 0 ? <DashboardIcon /> : null}
               {index === 1 ? <EmailIcon /> : null}
@@ -94,8 +149,21 @@ function DashboardLayoutBasic() {
           <Typography variant="h4" noWrap component="div">
             CampusTrade UBB
           </Typography>
+          <Box component="form" onSubmit={handleSearchSubmit} sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+            <Search>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Buscar…"
+                inputProps={{ 'aria-label': 'search' }}
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </Search>
+          </Box>
           <Button color="inherit" onClick={handleCreatePost} sx={{ marginLeft: 'auto' }}>
-            Crear Post
+            Crear Publicación
           </Button>
         </Toolbar>
       </AppBar>
